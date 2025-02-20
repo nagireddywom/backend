@@ -6,30 +6,40 @@ const auth = require('../Middleware/Auth.middleware');
 
 // All routes require authentication
 // router.use(authMiddleware);
-// router.post('/', auth, orderController.createOrder);
 
-// Get order by ID
-// router.get('/:orderId', auth, orderController.getOrder);
 
-// Get user's orders
-// router.get('/user/orders', auth, orderController.getUserOrders);
-// router.post('/orders', auth, orderController.createOrder);
-// router.get('/orders/:orderNumber', auth, orderController.getOrder);
-// router.get('/:orderNumber', auth, orderController.getOrder);
-
-// Get all orders for authenticated user
-// router.get('/user/orders', auth, orderController.getUserOrders);
 
 console.log('Available controller methods:', Object.keys(orderController));
 
 // Create new order
-router.post('/', auth, orderController.createOrder);
+// router.post('/', auth, orderController.createOrder);
 
-// Get order by order number
-router.get('/:orderNumber', auth, orderController.getOrder);
+// // Get order by order number
+// router.get('/:orderNumber', auth, orderController.getOrder);
+router.post('/', (req, res, next) => {
+    if (req.headers.authorization) {
+      auth(req, res, next);
+    } else {
+      next();
+    }
+  }, orderController.createOrder);
+  
+  // Get order by order number - handles both authenticated and guest orders
+  router.get('/:orderNumber', (req, res, next) => {
+    if (req.headers.authorization) {
+      auth(req, res, next);
+    } else {
+      next();
+    }
+  }, orderController.getOrder);
+  
 
 // Get all orders for user
 router.get('/user/orders', auth, orderController.getUserOrders);
+
+router.post('/guest/track', orderController.getGuestOrder);
+
+
 
 
 

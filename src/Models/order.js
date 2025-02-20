@@ -116,10 +116,18 @@ const orderSchema = new mongoose.Schema({
     unique: true,
     sparse: true // Allows multiple null values
   },
+  // user: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User',
+  //   required: true
+  // },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: function() {
+      // Only require user if it's not a guest order 
+      return !this.isGuestOrder;
+    }
   },
   orderDetails: {
     product: {
@@ -219,6 +227,10 @@ const orderSchema = new mongoose.Schema({
       type: Number,
       default: 0
     }
+  },
+  isGuestOrder: {
+    type: Boolean,
+    default: false
   },
   finalPrice: {
     type: Number,

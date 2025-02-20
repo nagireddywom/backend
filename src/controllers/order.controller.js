@@ -281,24 +281,190 @@ const User = require('../Models/User');
 
 
 
-// controllers/order.controller.js
-const Order = require ('../Models/order');
+// // controllers/order.controller.js
+// const Order = require ('../Models/order');
  
 
+// exports.createOrder = async (req, res) => {
+//   try {
+//     console.log('Creating order with data:', req.body);
+    
+//     // Create new order instance
+//     const order = new Order({
+//       user: req.user.id || req.user._id,
+//       orderDetails: req.body.orderDetails,
+//       shippingInfo: req.body.shippingInfo,
+//       giftDetails: req.body.giftDetails,
+//       finalPrice: req.body.finalPrice
+//     });
+
+//     // Save the order - this will trigger the pre-save middleware
+//     const savedOrder = await order.save();
+//     console.log('Order saved successfully:', savedOrder);
+
+//     res.status(201).json({
+//       success: true,
+//       orderNumber: savedOrder.orderNumber,
+//       order: {
+//         _id: savedOrder._id,
+//         orderNumber: savedOrder.orderNumber,
+//         finalPrice: savedOrder.finalPrice,
+//         status: savedOrder.status,
+//         createdAt: savedOrder.createdAt
+//       }
+//     });
+//   } catch (error) {
+//     console.error('Error creating order:', error);
+    
+//     if (error.name === 'ValidationError') {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Validation Error',
+//         errors: Object.values(error.errors).map(err => err.message)
+//       });
+//     }
+
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to create order',
+//       error: error.message
+//     });
+//   }
+// };
+
+// exports.getOrder = async (req, res) => {
+//   try {
+//     const order = await Order.findOne({ orderNumber: req.params.orderNumber });
+    
+//     if (!order) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Order not found'
+//       });
+//     }
+
+//     // Check if order belongs to user
+//     if (order.user.toString() !== (req.user.id || req.user._id)) {
+//       return res.status(403).json({
+//         success: false,
+//         message: 'Not authorized to access this order'
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       order
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch order',
+//       error: error.message
+//     });
+//   }
+// };
+
+// exports.getUserOrders = async (req, res) => {
+//   try {
+//     const orders = await Order.find({ 
+//       user: req.user.id || req.user._id 
+//     }).sort({ createdAt: -1 });
+
+//     res.status(200).json({
+//       success: true,
+//       orders: orders.map(order => ({
+//         _id: order._id,
+//         orderNumber: order.orderNumber,
+//         finalPrice: order.finalPrice,
+//         status: order.status,
+//         createdAt: order.createdAt
+//       }))
+//     });
+//   } catch (error) {
+//     console.error('Error fetching user orders:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch orders',
+//       error: error.message
+//     });
+//   }
+// };
+
+
+// controllers/order.controller.js
+const Order = require('../Models/order');
+
+// exports.createOrder = async (req, res) => {
+//   try {
+//     console.log('Creating order with data:', req.body);
+    
+//     // Check if it's a guest order or authenticated order
+//     const userId = req.user ? (req.user.id || req.user._id) : null;
+    
+//     // Create new order instance
+//     const order = new Order({
+//       user: userId, // Will be null for guest orders
+//       orderDetails: req.body.orderDetails,
+//       shippingInfo: req.body.shippingInfo,
+//       giftDetails: req.body.giftDetails,
+//       finalPrice: req.body.finalPrice,
+//       isGuestOrder: !userId // Mark as guest order if no user
+//     });
+
+//     // Save the order
+//     const savedOrder = await order.save();
+//     console.log('Order saved successfully:', savedOrder);
+
+//     res.status(201).json({
+//       success: true,
+//       orderNumber: savedOrder.orderNumber,
+//       order: {
+//         _id: savedOrder._id,
+//         orderNumber: savedOrder.orderNumber,
+//         finalPrice: savedOrder.finalPrice,
+//         status: savedOrder.status,
+//         createdAt: savedOrder.createdAt
+//       }
+//     });
+//   } catch (error) {
+//     console.error('Error creating order:', error);
+    
+//     if (error.name === 'ValidationError') {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Validation Error',
+//         errors: Object.values(error.errors).map(err => err.message)
+//       });
+//     }
+
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to create order',
+//       error: error.message
+//     });
+//   }
+// };
+
+
+// controllers/order.controller.js
 exports.createOrder = async (req, res) => {
   try {
     console.log('Creating order with data:', req.body);
     
+    // Determine if this is a guest order
+    const isGuestOrder = !req.user;
+    
     // Create new order instance
     const order = new Order({
-      user: req.user.id || req.user._id,
+      user: isGuestOrder ? null : (req.user.id || req.user._id),
+      isGuestOrder: isGuestOrder,
       orderDetails: req.body.orderDetails,
       shippingInfo: req.body.shippingInfo,
       giftDetails: req.body.giftDetails,
-      finalPrice: req.body.finalPrice
+      finalPrice: req.body.finalPrice,
     });
 
-    // Save the order - this will trigger the pre-save middleware
+    // Save the order
     const savedOrder = await order.save();
     console.log('Order saved successfully:', savedOrder);
 
@@ -343,12 +509,23 @@ exports.getOrder = async (req, res) => {
       });
     }
 
-    // Check if order belongs to user
-    if (order.user.toString() !== (req.user.id || req.user._id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to access this order'
-      });
+    // For guest orders, check email match instead of user ID
+    if (order.isGuestOrder) {
+      // Only allow access if the email in the request matches the order's email
+      if (req.body.email !== order.shippingInfo.email) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to access this order'
+        });
+      }
+    } else {
+      // For authenticated orders, check user ID
+      if (!req.user || order.user.toString() !== (req.user.id || req.user._id)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to access this order'
+        });
+      }
     }
 
     res.status(200).json({
@@ -366,9 +543,25 @@ exports.getOrder = async (req, res) => {
 
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ 
-      user: req.user.id || req.user._id 
-    }).sort({ createdAt: -1 });
+    let query;
+    
+    if (req.user) {
+      // For authenticated users, get their orders
+      query = { user: req.user.id || req.user._id };
+    } else if (req.body.email) {
+      // For guest users, get orders by email
+      query = { 
+        isGuestOrder: true,
+        'shippingInfo.email': req.body.email 
+      };
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Email required for guest order lookup'
+      });
+    }
+
+    const orders = await Order.find(query).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -381,10 +574,55 @@ exports.getUserOrders = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('Error fetching user orders:', error);
+    console.error('Error fetching orders:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch orders',
+      error: error.message
+    });
+  }
+};
+
+// New function to track guest orders
+exports.getGuestOrder = async (req, res) => {
+  try {
+    const { orderNumber, email } = req.body;
+
+    if (!orderNumber || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order number and email are required'
+      });
+    }
+
+    const order = await Order.findOne({
+      orderNumber,
+      isGuestOrder: true,
+      'shippingInfo.email': email
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found or email does not match'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      order: {
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        finalPrice: order.finalPrice,
+        status: order.status,
+        createdAt: order.createdAt,
+        shippingInfo: order.shippingInfo
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch guest order',
       error: error.message
     });
   }
