@@ -419,7 +419,7 @@ class ShiprocketService {
       }
 
       // Wait before AWB generation
-      await this.delay(2000);
+      // await this.delay(2000);
 
       // Generate AWB
       console.log('🏷️ Generating AWB...');
@@ -440,11 +440,11 @@ class ShiprocketService {
       }
   
       // Wait before pickup generation
-      await this.delay(2000);
+      // await this.delay(2000);
   
 
       // Wait before pickup generation
-      await this.delay(2000);
+      // await this.delay(2000);
 
       // Generate pickup
       console.log('🚚 Generating pickup...');
