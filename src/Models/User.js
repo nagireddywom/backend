@@ -134,24 +134,26 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  address: {
-    street: {
-      type: String,
-      required: true
-    },
-    city: {
-      type: String,
-      required: true
-    },
-    state: {
-      type: String,
-      required: true
-    },
-    pincode: {
-      type: String,
-      required: true
-    }
-  },
+  // },
+  // address: {
+  //   street: {
+  //     type: String,
+  //     required: true
+  //   },
+  //   city: {
+  //     type: String,
+  //     required: true
+  //   },
+  //   state: {
+  //     type: String,
+  //     required: true
+  //   },
+  //   pincode: {
+  //     type: String,
+  //     required: true
+  //   }
+  // },
+  
   isEmailVerified: {
     type: Boolean,
     default: false

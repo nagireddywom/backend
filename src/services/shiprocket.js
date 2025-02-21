@@ -399,7 +399,7 @@ class ShiprocketService {
                                selling_price: orderData.orderDetails.pricing.basePrice,
                           }],
         payment_method: "prepaid",
-        sub_total: 100,
+        sub_total:orderData.finalPrice,
         length: 10,
         breadth: 10,
         height: 2,

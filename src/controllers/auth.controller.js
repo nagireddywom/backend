@@ -17,10 +17,10 @@ exports.register = async (req, res) => {
       email, 
       phoneNumber, 
       password,
-      address,
-      city,
-      state,
-      pincode
+      // address,
+      // city,
+      // state,
+      // pincode
     } = req.body;
 
     // Check if user already exists
@@ -46,12 +46,12 @@ exports.register = async (req, res) => {
       email,
       phoneNumber,
       password,
-      address: {
-        street: address,
-        city,
-        state,
-        pincode
-      },
+      // address: {
+      //   street: address,
+      //   city,
+      //   state,
+      //   pincode
+      // },
       isEmailVerified: true // Auto-verifying for now
     });
 
@@ -72,7 +72,7 @@ exports.register = async (req, res) => {
         name: user.name,
         email: user.email,
         phoneNumber: user.phoneNumber,
-        address: user.address,
+        // address: user.address,
         isEmailVerified: user.isEmailVerified
       }
     });
